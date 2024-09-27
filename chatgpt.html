@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Othello Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { text-align: center; }
+        canvas { border: 2px solid #000; }
+    </style>
+</head>
+<body>
+    <script>
+        const ROWS = 8;
+        const COLS = 8;
+        const SIZE = 50;
+
+        let board;
+        let currentPlayer = 'X';
+
+        function setup() {
+            createCanvas(COLS * SIZE, ROWS * SIZE);
+            initializeBoard();
+            drawBoard();
+        }
+
+        function initializeBoard() {
+            board = new Array(ROWS);
+            for (let i = 0; i < ROWS; i++) {
+                board[i] = new Array(COLS).fill('');
+            }
+            const mid = Math.floor(ROWS / 2);
+            board[mid][mid] = 'X';
+            board[mid - 1][mid - 1] = 'X';
+            board[mid][mid - 1] = 'O';
+            board[mid - 1][mid] = 'O';
+        }
+
+        function drawBoard() {
+            for (let i = 0; i < ROWS; i++) {
+                for (let j = 0; j < COLS; j++) {
+                    const x = j * SIZE;
+                    const y = i * SIZE;
+                    fill(0, 128, 0);
+                    rect(x, y, SIZE, SIZE);
+                    if (board[i][j] === 'X') {
+                        fill(0);
+                        ellipse(x + SIZE / 2, y + SIZE / 2, SIZE * 0.8);
+                    } else if (board[i][j] === 'O') {
+                        fill(255);
+                        ellipse(x + SIZE / 2, y + SIZE / 2, SIZE * 0.8);
+                    }
+                }
+            }
+        }
+
+        function mouseClicked() {
+            const i = Math.floor(mouseY / SIZE);
+            const j = Math.floor(mouseX / SIZE);
+
+            if (isValidMove(i, j, currentPlayer)) {
+                makeMove(i, j, currentPlayer);
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                drawBoard();
+            }
+        }
+
+        function isValidMove(row, col, player) {
+            if (row < 0 || row >= ROWS || col < 0 || col >= COLS || board[row][col] !== '') {
+                return false;
+            }
+            const opponent = player === 'X' ? 'O' : 'X';
+            const directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+            for (const [dx, dy] of directions) {
+                let r = row + dx;
+                let c = col + dy;
+                let foundOpponent = false;
+                while (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                    if (board[r][c] === opponent) {
+                        foundOpponent = true;
+                    } else if (board[r][c] === player) {
+                        return foundOpponent;
+                    } else {
+                        break;
+                    }
+                    r += dx;
+                    c += dy;
+                }
+            }
+            return false;
+        }
+
+        function makeMove(row, col, player) {
+            board[row][col] = player;
+            const opponent = player === 'X' ? 'O' : 'X';
+            const directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+            for (const [dx, dy] of directions) {
+                let r = row + dx;
+                let c = col + dy;
+                let flipCount = 0;
+                while (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                    if (board[r][c] === opponent) {
+                        flipCount++;
+                    } else if (board[r][c] === player) {
+                        for (let i = 1; i <= flipCount; i++) {
+                            board[row + i * dx][col + i * dy] = player;
+                        }
+                        break;
+                    } else {
+                        break;
+                    }
+                    r += dx;
+                    c += dy;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
